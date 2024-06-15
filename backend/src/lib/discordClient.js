@@ -6,7 +6,10 @@ import help from './commands/util/help.js';
 import join from './commands/join/join.js';
 import leave from './commands/leave/leave.js';
 import play from './commands/play/play.js';
+import pause from './commands/pause/pause.js';
+import unpause from './commands/unpause/unpause.js';
 import sound from './commands/sound/sound.js';
+import stop from './commands/stop/stop.js';
 
 import { getRandomQuote } from '../util/util.js';
 
@@ -29,6 +32,9 @@ client.commands.set(join.data.name, join);
 client.commands.set(leave.data.name, leave);
 client.commands.set(play.data.name, play);
 client.commands.set(sound.data.name, sound);
+client.commands.set(pause.data.name, pause);
+client.commands.set(unpause.data.name, unpause);
+client.commands.set(stop.data.name, stop);
 
 client.on(Events.MessageCreate, async interaction => { 
     if(interaction.author.bot) return;

@@ -14,12 +14,16 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction) => {
 
     await interaction.deferReply();
+    const connection = getVoiceConnection(interaction.member.voice.channel.guildId);
+    if(!connection) { 
+        return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
+    }
+
     const inputUrl = interaction.options.getString('url');
     const { path: filePath, details: videoDetails } = await downloadAudio(inputUrl);
-    console.log(filePath, videoDetails)
-    const connection = getVoiceConnection(interaction.member.voice.channel.guildId);
     const player = createAudioPlayer();
     const resource = createAudioResource(filePath);
+    
     player.play(resource);
     connection.subscribe(player);
 

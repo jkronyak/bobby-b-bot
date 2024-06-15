@@ -7,6 +7,10 @@ import join from './commands/join/join.js';
 import leave from './commands/leave/leave.js';
 import play from './commands/play/play.js';
 import sound from './commands/sound/sound.js';
+import pause from './commands/pause/pause.js';
+import unpause from './commands/unpause/unpause.js';
+import stop from './commands/stop/stop.js';
+
 
 const token = process.env.BOT_TOKEN;
 const clientId = process.env.BOT_APP_ID;
@@ -21,19 +25,18 @@ const commands = [
     leave.data.toJSON(),
     play.data.toJSON(),
     sound.data.toJSON(),
-];
+    pause.data.toJSON(),
+    unpause.data.toJSON(),
+    stop.data.toJSON(),
 
-// const resp = await rest.put(
-//     Routes.applicationCommands(clientId, acePlaceGuildId),
-//     { body: commands }
-// );
+];
 
 await rest.put(
     Routes.applicationCommands(clientId, futureWorldLeadersGuildId),
     { body: commands }
 );
 
-// await rest.put(
-//     Routes.applicationCommands(clientId),
-//     { body: commands }
-// );
+await rest.put(
+    Routes.applicationCommands(clientId, acePlaceGuildId),
+    { body: commands }
+);
