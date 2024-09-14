@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 const downloadAudio = async (url) => { 
     const dl = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
     const details = (await ytdl.getInfo(url)).videoDetails;
-    console.log(details);
     const filePath = path.resolve(__dirname, `./files/${details.videoId}.mp3`).replace(/\\/g, '\\\\');;
     const writeStream = fs.createWriteStream(filePath);
     return new Promise((resolve, reject) => {
