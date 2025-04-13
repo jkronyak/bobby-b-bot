@@ -12,7 +12,7 @@ import { downloadAudio } from '../../youtube-player/downloader.js';
 
 import { secondsToTime } from '../../../util/util.js';
 
-const songQueue = [];
+export const songQueue = [];
 
 const data = new SlashCommandBuilder()
     .setName('play')
@@ -24,7 +24,7 @@ const data = new SlashCommandBuilder()
     );
 
 const execute = async (interaction) => {
-    console.log(songQueue);
+    console.log("songQueue", songQueue);
 
     await interaction.deferReply({ ephemeral: true });
 
@@ -33,18 +33,21 @@ const execute = async (interaction) => {
     if(!connection) { 
         return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
     }
-
     const inputUrl = interaction.options.getString('url');
     const { path: filePath, details: videoDetails } = await downloadAudio(inputUrl);
     const player = createAudioPlayer();
+
     const resource = createAudioResource(filePath);
-    songQueue.push({resource: resource, videoDetails: videoDetails});
-    
+
+    songQueue.push({
+        resource: resource, 
+        videoDetails: videoDetails,
+        user: interaction.member.displayName
+    });
+    console.log(songQueue);
     if(songQueue.length === 1) { 
         player.play(resource);
         connection.subscribe(player);
-        console.log(Number(videoDetails.lengthSeconds) * 1000);
-        console.log(new Date(Number(videoDetails.lengthSeconds) * 1000).toISOString().substring(11, 8))
         const embed = new EmbedBuilder()
             .setTitle('Now playing...')
             .setDescription(`[${videoDetails.title}](${videoDetails.video_url})\n(${secondsToTime(videoDetails.lengthSeconds)})`)
@@ -56,7 +59,6 @@ const execute = async (interaction) => {
 
     player.on('stateChange', async (oldState, newState) => {
         console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
-        console.log(songQueue);
         if(newState.status === 'idle') {
             const prev = songQueue.shift();
             const filePath = path.resolve(__dirname, `../../youtube-player/files/${prev.videoDetails.videoId}.mp3`).replace(/\\/g, '\\\\');;

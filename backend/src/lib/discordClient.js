@@ -10,6 +10,7 @@ import pause from './commands/pause/pause.js';
 import unpause from './commands/unpause/unpause.js';
 import sound from './commands/sound/sound.js';
 import stop from './commands/stop/stop.js';
+import queue from './commands/queue/queue.js';
 
 import { getRandomQuote } from '../util/util.js';
 
@@ -21,9 +22,6 @@ const client = new Client({intents: [
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
 ]});
-// client.on('ready', () => { 
-//     client.user.setStatus('invisible');
-// });
 
 client.commands = new Collection();
 
@@ -35,6 +33,7 @@ client.commands.set(sound.data.name, sound);
 client.commands.set(pause.data.name, pause);
 client.commands.set(unpause.data.name, unpause);
 client.commands.set(stop.data.name, stop);
+client.commands.set(queue.data.name, queue);
 
 client.on(Events.MessageCreate, async interaction => { 
     if(interaction.author.bot) return;
@@ -53,8 +52,6 @@ client.on(Events.MessageCreate, async interaction => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-    console.log("interaction");
-    // console.log(interaction);
 
 	if(interaction.isChatInputCommand()) {
         const command = interaction.client.commands.get(interaction.commandName);
@@ -91,7 +88,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setDescription('s1')
                     .setValue('s1')
                 )
-            // console.log(interaction.values)
         
             const row = new ActionRowBuilder()
                 .addComponents(soundSelect)
@@ -102,13 +98,10 @@ client.on(Events.InteractionCreate, async interaction => {
                 ]
             })
         } else if(interaction.customId === "sound-select") {
-            // console.log(interaction);
-
             const nameSelect = interaction.message.components[0].components[0];
             nameSelect.options.forEach(opt => {
                 opt.default = opt.value === interaction.values[0];
             })
-            console.log(nameSelect);
             await interaction.reply("lol");
         }
     }

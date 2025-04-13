@@ -10,6 +10,7 @@ import sound from './commands/sound/sound.js';
 import pause from './commands/pause/pause.js';
 import unpause from './commands/unpause/unpause.js';
 import stop from './commands/stop/stop.js';
+import queue from './commands/queue/queue.js';
 
 
 const token = process.env.BOT_TOKEN;
@@ -28,6 +29,7 @@ const commands = [
     pause.data.toJSON(),
     unpause.data.toJSON(),
     stop.data.toJSON(),
+    queue.data.toJSON()
 
 ];
 
