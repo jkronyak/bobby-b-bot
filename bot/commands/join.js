@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { joinVoiceChannel } from '@discordjs/voice';
 
-import { getRandomQuote } from '../../../util/util.js';
+import { getRandomQuote } from '../util/util.js';
 
 
 const data = new SlashCommandBuilder()

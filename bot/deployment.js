@@ -2,15 +2,15 @@ import { REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import help from './commands/util/help.js';
+import help from './commands/help.js';
 import join from './commands/join/join.js';
 import leave from './commands/leave/leave.js';
 import play from './commands/play/play.js';
-import sound from './commands/sound/sound.js';
-import pause from './commands/pause/pause.js';
-import unpause from './commands/unpause/unpause.js';
-import stop from './commands/stop/stop.js';
-import queue from './commands/queue/queue.js';
+import sound from './commands/sound.js';
+import pause from './commands/pause.js';
+import unpause from './commands/unpause.js';
+import stop from './commands/stop.js';
+import queue from './commands/queue.js';
 
 
 const token = process.env.BOT_TOKEN;
