@@ -8,9 +8,9 @@ const __dirname = path.dirname(__filename);
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { createAudioPlayer, createAudioResource, getVoiceConnection } from '@discordjs/voice';
 
-import { downloadAudio } from '../../youtube-player/downloader.js';
+import { downloadAudio } from '../youtube-player/downloader.js';
 
-import { secondsToTime } from '../../../util/util.js';
+import { secondsToTime } from '../util/util.js';
 
 export const songQueue = [];
 
@@ -33,10 +33,18 @@ const execute = async (interaction) => {
     if(!connection) { 
         return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
     }
-    const inputUrl = interaction.options.getString('url');
-    const { path: filePath, details: videoDetails } = await downloadAudio(inputUrl);
+    const inputUrl = interaction.options.getString('url').trim();
+    let filePath;
+    let videoDetails;
+    try {
+        const audio = await downloadAudio(inputUrl);
+        filePath = audio.path;
+        videoDetails = audio.details;
+    } catch (e) { 
+        console.log(e);
+        return await interaction.followUp({ content: `Error downloading audio. ${JSON.stringify(e)}`, ephemeral: true });
+    }
     const player = createAudioPlayer();
-
     const resource = createAudioResource(filePath);
 
     songQueue.push({
@@ -44,7 +52,7 @@ const execute = async (interaction) => {
         videoDetails: videoDetails,
         user: interaction.member.displayName
     });
-    console.log(songQueue);
+
     if(songQueue.length === 1) { 
         player.play(resource);
         connection.subscribe(player);
@@ -61,12 +69,7 @@ const execute = async (interaction) => {
         console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
         if(newState.status === 'idle') {
             const prev = songQueue.shift();
-            const filePath = path.resolve(__dirname, `../../youtube-player/files/${prev.videoDetails.videoId}.mp3`).replace(/\\/g, '\\\\');;
-            try {
-                fs.unlinkSync(filePath);
-            } catch (e) { 
-                console.log(e);
-            }
+            const filePath = path.resolve(__dirname, `../youtube-player/files/${prev.videoDetails.videoId}.mp3`).replace(/\\/g, '\\\\');;
             if(songQueue.length > 0) { 
                 const cur = songQueue[0];
                 player.play(cur.resource);
@@ -77,6 +80,11 @@ const execute = async (interaction) => {
                     .setThumbnail(cur.videoDetails.thumbnails[cur.videoDetails.thumbnails.length-1].url);
                 await interaction.channel.send({embeds: [embed]})
             }
+            try {
+                fs.unlinkSync(filePath);
+            } catch (e) { 
+                console.log(e);
+            }
         }
      });
 
@@ -84,7 +92,6 @@ const execute = async (interaction) => {
         console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
     });
 
-    const msg = songQueue.length === 1 ? "Now playing." : "Adding to queue."
     await interaction.followUp({ content: `Added to queue.\n[${videoDetails.title}](<${videoDetails.video_url}>)`, ephemeral: true });
 }
 

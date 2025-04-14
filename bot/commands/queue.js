@@ -32,8 +32,8 @@
 // };
 
 import { EmbedBuilder, SlashCommandBuilder } from '@discordjs/builders';
-import { songQueue } from '../play/play.js';
-import { secondsToTime } from '../../../util/util.js';
+import { songQueue } from './play.js';
+import { secondsToTime } from '../util/util.js';
 
 const data = new SlashCommandBuilder()
     .setName('queue')
