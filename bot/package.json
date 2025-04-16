@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bot": "nodemon ./src/lib/discordClient.js",
-    "deploy": "node ./src/lib/deployment.js"
+    "bot": "nodemon ./discordClient.js",
+    "deploy": "node ./deployment.js"
   },
   "author": "Jared Kronyak",
   "license": "ISC",

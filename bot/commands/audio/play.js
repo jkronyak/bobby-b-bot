@@ -8,9 +8,9 @@ const __dirname = path.dirname(__filename);
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { createAudioPlayer, createAudioResource, getVoiceConnection } from '@discordjs/voice';
 
-import { downloadAudio } from '../youtube-player/downloader.js';
+import { downloadAudio } from '../../youtube-player/downloader.js';
 
-import { secondsToTime } from '../util/util.js';
+import { secondsToTime } from '../../util/util.js';
 
 export const songQueue = [];
 
