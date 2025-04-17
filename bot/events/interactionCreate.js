@@ -11,7 +11,8 @@ export default {
 
             try { 
                 await command.execute(interaction);
-            } catch (error) { 
+            } catch (error) {
+                console.log(`Error while executing this command: ${error}`)
                 if (interaction.replied || interaction.deferred) { 
                     await interaction.followUp({ content: 'Error while executing this command!', emphemeral: true });
                 } else { 

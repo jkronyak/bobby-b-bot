@@ -6,7 +6,7 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import { createAudioPlayer, createAudioResource, getVoiceConnection } from '@discordjs/voice';
+import { createAudioPlayer, createAudioResource, getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
 
 import { downloadAudio } from '../../youtube-player/downloader.js';
 
@@ -28,11 +28,23 @@ const execute = async (interaction) => {
 
     await interaction.deferReply({ ephemeral: true });
 
-    const guildId = interaction.guildId;
-    const connection = getVoiceConnection(guildId);
-    if(!connection) { 
-        return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
+    const { channel } = interaction.member.voice;
+    if (!channel) { 
+        return await interaction.followUp('You need to be in a voice channel to use this command!');
     }
+
+    const guildId = interaction.guildId;
+    let connection = getVoiceConnection(guildId);
+    
+    if (!connection) { 
+        joinVoiceChannel({ 
+            channelId: channel.id, 
+            guildId: channel.guild.id, 
+            adapterCreator: channel.guild.voiceAdapterCreator
+        });
+        connection = getVoiceConnection(guildId);
+    }
+
     const inputUrl = interaction.options.getString('url').trim();
     let filePath;
     let videoDetails;
@@ -62,8 +74,6 @@ const execute = async (interaction) => {
             .setThumbnail(videoDetails.thumbnails[videoDetails.thumbnails.length-1].url);
         await interaction.channel.send({embeds: [embed]})
     }
-
-    // player.play(resource);
 
     player.on('stateChange', async (oldState, newState) => {
         console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
