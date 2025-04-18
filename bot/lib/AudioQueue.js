@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { createAudioPlayer } from "@discordjs/voice";
+import { createAudioPlayer, createAudioResource } from "@discordjs/voice";
 
 import { secondsToTime } from "../util/util.js";
 
@@ -10,13 +10,14 @@ class AudioQueue {
     }
 
     initPlayer(guildId, channel) {
-        const { queue, connection, player } = this.sessions.get(guildId);
+        const { queue, connection, player, repeatFlag } = this.sessions.get(guildId);
         if (!player) { 
             const newPlayer = createAudioPlayer();
             this.sessions.set(guildId, { 
                 queue,
                 connection, 
-                player: newPlayer
+                player: newPlayer,
+                repeatFlag
             });
             connection.subscribe(newPlayer);
 
@@ -24,10 +25,12 @@ class AudioQueue {
                 console.log(`Player in guild ${guildId} transitioned from ${oldState.status} to ${newState.status}`);
                 if (newState.status === 'idle') {
                     const curSession = this.sessions.get(guildId);
-                    curSession.queue.shift();
+                    if(!curSession.repeatFlag) { 
+                        curSession.queue.shift();
+                    }
                     if (curSession.queue.length > 0) { 
                         const cur = curSession.queue[0];
-                        newPlayer.play(cur.resource);
+                        newPlayer.play(createAudioResource(cur.resourcePath));
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
                             .setDescription(`[${cur.videoDetails.title}](${cur.videoDetails.video_url})\n(${secondsToTime(cur.videoDetails.lengthSeconds)})`)
@@ -48,7 +51,8 @@ class AudioQueue {
             this.sessions.set(guildId, {
                 queue: [],
                 connection: connection,
-                player: null
+                player: null,
+                repeatFlag: false
             });
         }
         return this.sessions.get(guildId);
@@ -76,15 +80,15 @@ class AudioQueue {
         if (queue.length > 0) { 
             const cur = queue[0];
             connection.subscribe(player);
-            player.play(cur.resource);
+            player.play(createAudioResource(cur.resourcePath));
             return cur;
         }
         return null;
     }
 
-    enqueue(guildId, resource, videoDetails, user) {
+    enqueue(guildId, resourcePath, videoDetails, user) {
         const { queue } = this.sessions.get(guildId);
-        const song = { resource, videoDetails, user };
+        const song = { resourcePath, videoDetails, user };
         queue.push(song);
         return queue.length - 1;
     }
@@ -108,6 +112,11 @@ class AudioQueue {
     skip(guildId) { 
         const { player } = this.sessions.get(guildId);
         player.stop();
+    }
+
+    repeat(guildId) { 
+        const session = this.sessions.get(guildId);
+        session.repeatFlag = !session.repeatFlag;
     }
 
 }

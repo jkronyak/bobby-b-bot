@@ -46,11 +46,12 @@ const execute = async (interaction) => {
         return await interaction.followUp({ content: `Error downloading audio. ${JSON.stringify(e)}`, ephemeral: true });
     }
 
-    const resource = createAudioResource(audioData.path);
+    // const resource = createAudioResource(audioData.path);
+    const path = audioData.path;
     audioQueue.initGuildSession(guildId, connection);
     audioQueue.initPlayer(guildId, interaction.channel);
 
-    const pos = audioQueue.enqueue(guildId, resource, audioData.details, interaction.member.displayName);
+    const pos = audioQueue.enqueue(guildId, path, audioData.details, interaction.member.displayName);
     if(pos === 0) {
         audioQueue.play(guildId);
         const embed = new EmbedBuilder()

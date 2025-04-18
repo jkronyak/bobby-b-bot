@@ -1,6 +1,5 @@
-import { EmbedBuilder, SlashCommandBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import audioQueue from '../../lib/AudioQueue.js';
-import { secondsToTime } from '../../util/util.js';
 
 const data = new SlashCommandBuilder()
     .setName('skip')
