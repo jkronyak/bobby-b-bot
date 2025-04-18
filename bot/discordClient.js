@@ -9,13 +9,16 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const token = process.env.BOT_TOKEN;
+const args = process.argv.slice(2);
 
 const client = new Client({intents: [
-    GatewayIntentBits.Guilds, 
-    GatewayIntentBits.GuildVoiceStates, 
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-]});
+        GatewayIntentBits.Guilds, 
+        GatewayIntentBits.GuildVoiceStates, 
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ],
+    ...(args.includes('--invisible') ? { presence: { status: 'invisible' } } : {})
+});
 
 client.commands = new Collection();
 
