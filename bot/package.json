@@ -22,7 +22,6 @@
     "install": "^0.13.0",
     "libsodium-wrappers": "^0.7.13",
     "nodemon": "^3.1.0",
-    "npm": "^11.3.0",
-    "ytdl-core": "^4.11.5"
+    "npm": "^11.3.0"
   }
 }

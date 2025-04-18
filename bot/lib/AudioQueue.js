@@ -22,10 +22,11 @@ class AudioQueue {
 
             newPlayer.on('stateChange', async (oldState, newState) => { 
                 console.log(`Player in guild ${guildId} transitioned from ${oldState.status} to ${newState.status}`);
-                if (newState.status === 'idle') { 
-                    const prev = queue.shift();
-                    if (queue.length > 0) { 
-                        const cur = queue[0];
+                if (newState.status === 'idle') {
+                    const curSession = this.sessions.get(guildId);
+                    curSession.queue.shift();
+                    if (curSession.queue.length > 0) { 
+                        const cur = curSession.queue[0];
                         newPlayer.play(cur.resource);
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
@@ -47,7 +48,7 @@ class AudioQueue {
             this.sessions.set(guildId, {
                 queue: [],
                 connection: connection,
-                player: null,
+                player: null
             });
         }
         return this.sessions.get(guildId);
@@ -100,8 +101,13 @@ class AudioQueue {
 
     stop(guildId) { 
         const { player } = this.sessions.get(guildId);
+        this.clearQueue(guildId);
         player.stop();
-        this.clearQueue();
+    }
+
+    skip(guildId) { 
+        const { player } = this.sessions.get(guildId);
+        player.stop();
     }
 
 }
