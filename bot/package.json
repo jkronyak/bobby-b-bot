@@ -2,24 +2,26 @@
   "name": "bobby-b-server",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "discordClient.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bot": "nodemon ./src/lib/discordClient.js"
+    "bot": "nodemon ./discordClient.js",
+    "deploy": "node ./deployment.js"
   },
   "author": "Jared Kronyak",
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "github:discordjs/opus",
     "@discordjs/voice": "^0.16.1",
+    "@distube/ytdl-core": "^4.16.8",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
     "ffmpeg-static": "^5.2.0",
+    "install": "^0.13.0",
     "libsodium-wrappers": "^0.7.13",
     "nodemon": "^3.1.0",
-    "ytdl-core": "^4.11.5"
+    "npm": "^11.3.0"
   }
 }

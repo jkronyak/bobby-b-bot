@@ -1,20 +1,23 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
+import { joinVoiceChannel } from '@discordjs/voice';
 
-import { getRandomQuote } from '../../../util/util.js';
+import { getRandomQuote } from '../../util/util.js';
 
 
 const data = new SlashCommandBuilder()
-    .setName('leave')
-    .setDescription('Bobby B leaves the voice channel.');
+    .setName('join')
+    .setDescription('Bobby B joins the voice channel.');
 
 const execute = async (interaction) => {
     const channel = interaction.member.voice.channel;
     if(!channel) { 
         return await interaction.reply('You need to be in a voice channel to use this command!');
     }
-    const connection = getVoiceConnection(channel.guild.id);
-    connection.destroy();
+    joinVoiceChannel({
+        channelId: channel.id,
+        guildId: channel.guild.id,
+        adapterCreator: channel.guild.voiceAdapterCreator,
+    });
     await interaction.reply({content: getRandomQuote(), ephemeral: true});
 }
 
