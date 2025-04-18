@@ -43,5 +43,8 @@ for (const file of eventFiles) {
     else client.on(event.name, (...args) => event.execute(...args));
 }
 
+process.on('exit', () => client.destroy());
+process.on('SIGINT', () => client.destroy());
+
 await client.login(token);
 console.log('Successfully logged in.');
