@@ -36,26 +36,25 @@ const execute = async (interaction) => {
     }
 
     const inputUrl = interaction.options.getString('url').trim();
-    let audioData;
+    let songData;
     try { 
-        audioData = await downloadAudio(inputUrl);
+        songData = await downloadAudio(inputUrl);
     } catch (error) { 
         console.log(error);
         return await interaction.followUp({ content: `Error downloading audio. ${JSON.stringify(e)}`, ephemeral: true });
     }
 
     // const resource = createAudioResource(audioData.path);
-    const path = audioData.path;
     audioQueue.initGuildSession(guildId, connection);
     audioQueue.initPlayer(guildId, interaction.channel);
     const author = { displayName: interaction.member.displayName, photo: interaction.user.displayAvatarURL() };
-    const pos = audioQueue.enqueue(guildId, path, audioData.details, author);
+    const pos = audioQueue.enqueue(guildId, songData, author);
     if(pos === 0) {
         audioQueue.play(guildId);
         const embed = new EmbedBuilder()
             .setTitle('Now playing...')
-            .setDescription(`[${audioData.details.title}](${audioData.details.video_url})\n(${secondsToTime(audioData.details.lengthSeconds)})`)
-            .setThumbnail(audioData.details.thumbnails[audioData.details.thumbnails.length-1].url)
+            .setDescription(`[${songData.title}](${songData.url})\n(${songData.duration})`)
+            .setThumbnail(songData.thumbnail)
             .setAuthor({ name: author.displayName, iconURL: author.photo });
 
         const pauseBtn = new ButtonBuilder()
@@ -72,7 +71,7 @@ const execute = async (interaction) => {
         await interaction.channel.send({embeds: [embed], components: [row]});
     }
     await interaction.followUp({
-        content: `Added to queue.\n[${audioData.details.title}](<${audioData.details.video_url}>)`, 
+        content: `Added to queue.\n[${songData.title}](<${songData.url}>)`, 
         ephemeral: true 
     });
 }

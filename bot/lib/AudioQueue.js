@@ -32,7 +32,7 @@ class AudioQueue {
                     if (curSession.queue.length > 0) { 
                         const cur = curSession.queue[0];
                         console.log(cur);
-                        newPlayer.play(createAudioResource(cur.resourcePath));
+                        newPlayer.play(createAudioResource(cur.path));
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
                             .setDescription(`[${cur.videoDetails.title}](${cur.videoDetails.video_url})\n(${secondsToTime(cur.videoDetails.lengthSeconds)})`)
@@ -90,18 +90,18 @@ class AudioQueue {
 
     play(guildId) {
         const { queue, connection, player } = this.sessions.get(guildId);
-        if (queue.length > 0) { 
+        if (queue.length > 0) {
             const cur = queue[0];
             connection.subscribe(player);
-            player.play(createAudioResource(cur.resourcePath));
+            player.play(createAudioResource(cur.path));
             return cur;
         }
         return null;
     }
 
-    enqueue(guildId, resourcePath, videoDetails, user) {
+    enqueue(guildId, songData, user) {
         const { queue } = this.sessions.get(guildId);
-        const song = { resourcePath, videoDetails, user };
+        const song = { ...songData, user };
         queue.push(song);
         return queue.length - 1;
     }
