@@ -1,36 +1,31 @@
-import fs from 'fs'
 import path from 'path';
 import url from 'url';
 
-import ytdl from '@distube/ytdl-core';
+import youtubedl from 'youtube-dl-exec';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const downloadAudio = async (url) => {
-    const isValid = ytdl.validateURL(url);
-    if (!isValid) {
-        throw new Error('Invalid URL');
-    }
-    const dl = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
-    const details = (await ytdl.getInfo(url)).videoDetails;
-    const filePath = path.resolve(__dirname, `./files/${details.videoId}.mp3`).replace(/\\/g, '\\\\');;
-    const writeStream = fs.createWriteStream(filePath);
-    return new Promise((resolve, reject) => {
-        writeStream.on('finish', () => {
-            resolve({
-                path: filePath,
-                details: details
-            });
-        });
-        writeStream.on('error', (err) => {
-            reject(err);
-        });
-        dl.pipe(writeStream);
+const downloadAudio = async (url) => {  
+    const dl = await youtubedl(url, {
+        extractAudio: true, 
+        audioFormat: 'mp3',
+        audioQuality: 0,
+        output: __dirname + '/files/%(id)s.%(ext)s',
+        ffmpegLocation: 'C:/ffmpeg/bin',
+        preferFfmpeg: true,
+        printJson: true        
     });
-
-}
+    return { 
+        url: dl.original_url,
+        id: dl.display_id,
+        title: dl.fulltitle,
+        duration: dl.duration_string,
+        path: path.resolve(__dirname, `./files/${dl.display_id}.mp3`).replace(/\\/g, '\\\\'),
+        thumbnail: dl.thumbnail
+    };
+};
 
 export { 
     downloadAudio
-};
+}

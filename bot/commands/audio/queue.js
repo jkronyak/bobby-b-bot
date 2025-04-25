@@ -10,9 +10,9 @@ const execute = async (interaction) => {
     // Create an array of embeds
     const embeds = audioQueue.getQueue(interaction.guild.id).map((item, idx) => 
         new EmbedBuilder()
-            .setTitle(`[${idx+1}]`)
-            .setDescription(`**[${item.videoDetails.title}](${item.videoDetails.video_url})**\n(${secondsToTime(item.videoDetails.lengthSeconds)})`)
-            .setThumbnail(item.videoDetails.thumbnails[item.videoDetails.thumbnails.length - 1].url)
+            .setTitle(`[${idx}]`)
+            .setDescription(`[${item.title}](${item.url})\n(${item.duration})`)
+            .setThumbnail(item.thumbnail)
     );
 
     const reply = embeds.length > 0 ? { embeds } : "NOTHING YOU FUCKING IDIOT";
