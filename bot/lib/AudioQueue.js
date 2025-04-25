@@ -35,8 +35,8 @@ class AudioQueue {
                         newPlayer.play(createAudioResource(cur.path));
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
-                            .setDescription(`[${cur.videoDetails.title}](${cur.videoDetails.video_url})\n(${secondsToTime(cur.videoDetails.lengthSeconds)})`)
-                            .setThumbnail(cur.videoDetails.thumbnails[cur.videoDetails.thumbnails.length-1].url);
+                            .setDescription(`[${cur.title}](${cur.url})\n(${cur.duration})`)
+                            .setThumbnail(cur.thumbnail);
                         const pauseBtn = new ButtonBuilder()
                             .setCustomId('pause-btn')
                             .setLabel('Pause')
