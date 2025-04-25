@@ -1,11 +1,9 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import { createAudioResource, getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
 
 import audioQueue from '../../lib/AudioQueue.js';
 import { downloadAudio } from '../../youtube-player/downloader.js';
 import { secondsToTime } from '../../util/util.js';
-
-export const songQueue = [];
 
 const data = new SlashCommandBuilder()
     .setName('play')
@@ -50,15 +48,28 @@ const execute = async (interaction) => {
     const path = audioData.path;
     audioQueue.initGuildSession(guildId, connection);
     audioQueue.initPlayer(guildId, interaction.channel);
-
-    const pos = audioQueue.enqueue(guildId, path, audioData.details, interaction.member.displayName);
+    const author = { displayName: interaction.member.displayName, photo: interaction.user.displayAvatarURL() };
+    const pos = audioQueue.enqueue(guildId, path, audioData.details, author);
     if(pos === 0) {
         audioQueue.play(guildId);
         const embed = new EmbedBuilder()
             .setTitle('Now playing...')
             .setDescription(`[${audioData.details.title}](${audioData.details.video_url})\n(${secondsToTime(audioData.details.lengthSeconds)})`)
-            .setThumbnail(audioData.details.thumbnails[audioData.details.thumbnails.length-1].url);
-        await interaction.channel.send({embeds: [embed]});
+            .setThumbnail(audioData.details.thumbnails[audioData.details.thumbnails.length-1].url)
+            .setAuthor({ name: author.displayName, iconURL: author.photo });
+
+        const pauseBtn = new ButtonBuilder()
+            .setCustomId('pause-btn')
+            .setLabel('Pause')
+            .setStyle(ButtonStyle.Primary)
+
+        const skipBtn = new ButtonBuilder()
+            .setCustomId('skip-btn')
+            .setLabel('Skip')
+            .setStyle(ButtonStyle.Secondary)
+        
+        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn);
+        await interaction.channel.send({embeds: [embed], components: [row]});
     }
     await interaction.followUp({
         content: `Added to queue.\n[${audioData.details.title}](<${audioData.details.video_url}>)`, 

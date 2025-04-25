@@ -1,4 +1,6 @@
-import { Events, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } from 'discord.js';
+import { Events, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import audioQueue from '../lib/AudioQueue.js';
+import { getVoiceConnection } from '@discordjs/voice';
 
 export default {
     name: Events.InteractionCreate, 
@@ -19,7 +21,7 @@ export default {
                     await interaction.reply({ content: 'Error while executing this command!', emphemeral: true });
                 }
             }
-        } else if(interaction.isStringSelectMenu()) { 
+        } else if (interaction.isStringSelectMenu()) { 
             if(interaction.customId === 'name-select') {
     
                 const nameSelect = interaction.message.components[0].components[0];
@@ -51,6 +53,45 @@ export default {
                     opt.default = opt.value === interaction.values[0];
                 })
                 await interaction.reply("lol");
+            }
+        } else if (interaction.isButton()) { 
+            if (interaction.customId === 'pause-btn') {
+                const { guildId } = interaction.member.voice.channel;
+                const connection = getVoiceConnection(guildId);
+                if(!connection) { 
+                    return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
+                }
+
+                audioQueue.pause(guildId);
+                const { message } = interaction;
+                const newBtn = new ButtonBuilder()
+                    .setCustomId('unpause-btn')
+                    .setLabel('Resume')
+                    .setStyle(ButtonStyle.Primary);
+                const newRow = new ActionRowBuilder().addComponents(newBtn);
+                await interaction.update({ embeds: [...message.embeds], components: [newRow]});
+            } else if (interaction.customId === 'unpause-btn') { 
+                const { guildId } = interaction.member.voice.channel;
+                const connection = getVoiceConnection(guildId);
+                if(!connection) { 
+                    return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
+                }
+
+                audioQueue.unpause(guildId);
+                const { message } = interaction;
+                const newBtn = new ButtonBuilder()
+                    .setCustomId('pause-btn')
+                    .setLabel('Pause')
+                    .setStyle(ButtonStyle.Primary);
+                const newRow = new ActionRowBuilder().addComponents(newBtn);
+                await interaction.update({ embeds: [...message.embeds], components: [newRow]});
+            } else if (interaction.customId === 'skip-btn') { 
+                const { guildId } = interaction.member.voice.channel;
+                audioQueue.skip(guildId);
+                return await interaction.reply('Skipping...');
+            } else if (interaction.customId === 'repeat-btn') { 
+                const { guildId } = interaction.member.voice.channel;
+                return await interaction.reply('Not implemented yet...');
             }
         }
     }

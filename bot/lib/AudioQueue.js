@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "@discordjs/builders";
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import { ButtonStyle } from "discord.js";
 import { createAudioPlayer, createAudioResource } from "@discordjs/voice";
 
 import { secondsToTime } from "../util/util.js";
@@ -30,12 +31,24 @@ class AudioQueue {
                     }
                     if (curSession.queue.length > 0) { 
                         const cur = curSession.queue[0];
+                        console.log(cur);
                         newPlayer.play(createAudioResource(cur.resourcePath));
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
                             .setDescription(`[${cur.videoDetails.title}](${cur.videoDetails.video_url})\n(${secondsToTime(cur.videoDetails.lengthSeconds)})`)
                             .setThumbnail(cur.videoDetails.thumbnails[cur.videoDetails.thumbnails.length-1].url);
-                        await channel.send({embeds: [embed]});
+                        const pauseBtn = new ButtonBuilder()
+                            .setCustomId('pause-btn')
+                            .setLabel('Pause')
+                            .setStyle(ButtonStyle.Primary)
+                
+                        const skipBtn = new ButtonBuilder()
+                            .setCustomId('skip-btn')
+                            .setLabel('Skip')
+                            .setStyle(ButtonStyle.Secondary)
+                        
+                        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn);
+                        await channel.send({embeds: [embed], components: [row]});
                     }
                 }
             });
