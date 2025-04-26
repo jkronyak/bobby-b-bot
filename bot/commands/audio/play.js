@@ -60,14 +60,19 @@ const execute = async (interaction) => {
         const pauseBtn = new ButtonBuilder()
             .setCustomId('pause-btn')
             .setLabel('Pause')
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(ButtonStyle.Primary);
 
         const skipBtn = new ButtonBuilder()
             .setCustomId('skip-btn')
             .setLabel('Skip')
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Secondary);
         
-        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn);
+        const stopBtn = new ButtonBuilder()
+            .setCustomId('stop-btn')
+            .setLabel('Stop')
+            .setStyle(ButtonStyle.Danger)
+        
+        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn, stopBtn);
         await interaction.channel.send({embeds: [embed], components: [row]});
     }
     await interaction.followUp({

@@ -31,7 +31,6 @@ class AudioQueue {
                     }
                     if (curSession.queue.length > 0) { 
                         const cur = curSession.queue[0];
-                        console.log(cur);
                         newPlayer.play(createAudioResource(cur.path));
                         const embed = new EmbedBuilder()
                             .setTitle('Now playing...')
@@ -40,14 +39,19 @@ class AudioQueue {
                         const pauseBtn = new ButtonBuilder()
                             .setCustomId('pause-btn')
                             .setLabel('Pause')
-                            .setStyle(ButtonStyle.Primary)
+                            .setStyle(ButtonStyle.Primary);
                 
                         const skipBtn = new ButtonBuilder()
                             .setCustomId('skip-btn')
                             .setLabel('Skip')
-                            .setStyle(ButtonStyle.Secondary)
+                            .setStyle(ButtonStyle.Secondary);
+
+                        const stopBtn = new ButtonBuilder()
+                            .setCustomId('stop-btn')
+                            .setLabel('Stop')
+                            .setStyle(ButtonStyle.Danger);
                         
-                        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn);
+                        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn, stopBtn);
                         await channel.send({embeds: [embed], components: [row]});
                     }
                 }
