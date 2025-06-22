@@ -1,11 +1,9 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import { createAudioResource, getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
 
 import audioQueue from '../../lib/AudioQueue.js';
 import { downloadAudio } from '../../youtube-player/downloader.js';
 import { secondsToTime } from '../../util/util.js';
-
-export const songQueue = [];
 
 const data = new SlashCommandBuilder()
     .setName('play')
@@ -18,7 +16,7 @@ const data = new SlashCommandBuilder()
 
 const execute = async (interaction) => {
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
 
     const { channel } = interaction.member.voice;
     if (!channel) { 
@@ -46,23 +44,50 @@ const execute = async (interaction) => {
         return await interaction.followUp({ content: `Error downloading audio. ${JSON.stringify(e)}`, ephemeral: true });
     }
 
-    // const resource = createAudioResource(audioData.path);
     audioQueue.initGuildSession(guildId, connection);
     audioQueue.initPlayer(guildId, interaction.channel);
-
-    const pos = audioQueue.enqueue(guildId, songData, interaction.member.displayName);
+    const author = { displayName: interaction.member.displayName, photo: interaction.user.displayAvatarURL() };
+    const pos = audioQueue.enqueue(guildId, songData, author);
     if(pos === 0) {
-        audioQueue.play(guildId);
+        const { repeatFlag } = audioQueue.getSession(guildId);
         const embed = new EmbedBuilder()
             .setTitle('Now playing...')
             .setDescription(`[${songData.title}](${songData.url})\n(${songData.duration})`)
-            .setThumbnail(songData.thumbnail);
-        await interaction.channel.send({embeds: [embed]});
-    }
-    await interaction.followUp({
-        content: `Added to queue.\n[${songData.title}](<${songData.url}>)`, 
-        ephemeral: true 
-    });
+            .setThumbnail(songData.thumbnail)
+            .setAuthor({ name: author.displayName, iconURL: author.photo });
+        
+        const pauseBtn = new ButtonBuilder()
+            .setCustomId('pause-btn')
+            .setLabel('Pause')
+            .setStyle(ButtonStyle.Primary);
+        
+        const skipBtn = new ButtonBuilder()
+            .setCustomId('skip-btn')
+            .setLabel('Skip')
+            .setStyle(ButtonStyle.Secondary);
+        
+        const stopBtn = new ButtonBuilder()
+            .setCustomId('stop-btn')
+            .setLabel('Stop')
+            .setStyle(ButtonStyle.Danger);
+
+        const repeatBtn = new ButtonBuilder()
+            .setCustomId('repeat-btn')
+            .setLabel(repeatFlag ? 'Repeat Off' : 'Repeat On')
+            .setStyle(ButtonStyle.Primary);
+
+        const queueBtn = new ButtonBuilder()
+            .setCustomId('queue-btn')
+            .setLabel('View Queue')
+            .setStyle(ButtonStyle.Primary);
+        
+        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn, stopBtn, repeatBtn, queueBtn);
+        const sentMessage = await interaction.channel.send({embeds: [embed], components: [row]});
+        audioQueue.play(guildId, sentMessage);
+    } 
+    const queueEmbed = new EmbedBuilder()
+        .setDescription(`Added to queue position [${pos}]: [${songData.title}](${songData.url})`)
+    await interaction.followUp({embeds: [queueEmbed]});
 }
 
 export default {

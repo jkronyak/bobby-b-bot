@@ -9,7 +9,6 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const normalizeAudio = async (input, output) => {
-    console.log('normalize', input, output);
     return new Promise( (resolve, reject) => { 
         ffmpeg(input)
             .audioFilters('loudnorm=I=-16:LRA=11:TP=-1.5')
