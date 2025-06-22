@@ -1,4 +1,12 @@
-import { Events, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { 
+    Events, 
+    StringSelectMenuBuilder, 
+    StringSelectMenuOptionBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle,
+    EmbedBuilder
+} from 'discord.js';
 import audioQueue from '../lib/AudioQueue.js';
 import { getVoiceConnection } from '@discordjs/voice';
 
@@ -54,7 +62,8 @@ export default {
                 })
                 await interaction.reply("lol");
             }
-        } else if (interaction.isButton()) { 
+        } else if (interaction.isButton()) {
+            console.log('interaction', interaction.customId);
             if (interaction.customId === 'pause-btn') {
                 const { guildId } = interaction.member.voice.channel;
                 const connection = getVoiceConnection(guildId);
@@ -76,7 +85,7 @@ export default {
                 });
 
                 await interaction.update({ embeds: [...message.embeds], components: updatedComps});
-            } else if (interaction.customId === 'unpause-btn') { 
+            } else if (interaction.customId === 'unpause-btn') {
                 const { guildId } = interaction.member.voice.channel;
                 const connection = getVoiceConnection(guildId);
                 if(!connection) { 
@@ -89,11 +98,11 @@ export default {
                     .setCustomId('pause-btn')
                     .setLabel('Pause')
                     .setStyle(ButtonStyle.Primary);
-                    const updatedComps = message.components.map(row => {
-                        const newRow = new ActionRowBuilder();
-                        const newRowComps = row.components.map(comp => comp.customId === 'unpause-btn' ? newBtn : ButtonBuilder.from(comp));
-                        return newRow.addComponents(newRowComps);
-                    });
+                const updatedComps = message.components.map(row => {
+                    const newRow = new ActionRowBuilder();
+                    const newRowComps = row.components.map(comp => comp.customId === 'unpause-btn' ? newBtn : ButtonBuilder.from(comp));
+                    return newRow.addComponents(newRowComps);
+                });
                 await interaction.update({ embeds: [...message.embeds], components: updatedComps});
             } else if (interaction.customId === 'skip-btn') { 
                 const { guildId } = interaction.member.voice.channel;
@@ -116,10 +125,38 @@ export default {
             } else if (interaction.customId === 'repeat-btn') { 
                 const { guildId } = interaction.member.voice.channel;
                 const connection = getVoiceConnection(guildId);
-                if(!connection) { 
+                if (!connection) { 
+                    return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
+                } 
+                const session = audioQueue.getSession(guildId);
+                audioQueue.repeat(guildId);
+                const { message } = interaction;
+                const newBtn = new ButtonBuilder()
+                    .setCustomId('repeat-btn')
+                    .setLabel(session.repeatFlag ? 'Repeat Off' : 'Repeat On')
+                    .setStyle(ButtonStyle.Primary);
+
+                const updatedComps = message.components.map(row => {
+                    const newRow = new ActionRowBuilder();
+                    const newRowComps = row.components.map(comp => comp.customId === 'repeat-btn' ? newBtn : ButtonBuilder.from(comp));
+                    return newRow.addComponents(newRowComps);
+                });
+                await interaction.update({ embeds: [...message.embeds], components: updatedComps});
+            } else if (interaction.customId === 'queue-btn') { 
+                const { guildId } = interaction.member.voice.channel;
+                const connection = getVoiceConnection(guildId);
+                if (!connection) { 
                     return await interaction.reply({ content: 'Not in a voice channel!', ephemeral: true })
                 }
-                return await interaction.reply('Not implemented yet...');
+                    const embeds = audioQueue.getQueue(interaction.guild.id).map((item, idx) => 
+                    new EmbedBuilder()
+                        .setTitle(`[${idx}]`)
+                        .setDescription(`[${item.title}](${item.url})\n(${item.duration})`)
+                        .setThumbnail(item.thumbnail)
+                );
+
+                const reply = embeds.length > 0 ? { embeds } : "NOTHING YOU FUCKING IDIOT";
+                await interaction.reply(reply);
             }
         }
     }

@@ -11,24 +11,31 @@ class AudioQueue {
     }
 
     initPlayer(guildId, channel) {
-        const { queue, connection, player, repeatFlag } = this.sessions.get(guildId);
+        const { queue, connection, player, repeatFlag, nowPlayingMessage } = this.sessions.get(guildId);
         if (!player) { 
             const newPlayer = createAudioPlayer();
             this.sessions.set(guildId, { 
                 queue,
                 connection, 
                 player: newPlayer,
-                repeatFlag
+                repeatFlag, 
+                nowPlayingMessage
             });
             connection.subscribe(newPlayer);
 
             newPlayer.on('stateChange', async (oldState, newState) => { 
                 console.log(`Player in guild ${guildId} transitioned from ${oldState.status} to ${newState.status}`);
+                const curSession = this.sessions.get(guildId);
                 if (newState.status === 'idle') {
-                    const curSession = this.sessions.get(guildId);
+                    if (curSession.nowPlayingMessage) {
+                        await curSession.nowPlayingMessage.delete();
+                        curSession.nowPlayingMessage = null;
+                    }
+
                     if(!curSession.repeatFlag) { 
                         curSession.queue.shift();
                     }
+                    let sentMessage = null;
                     if (curSession.queue.length > 0) { 
                         const cur = curSession.queue[0];
                         newPlayer.play(createAudioResource(cur.path));
@@ -50,11 +57,35 @@ class AudioQueue {
                             .setCustomId('stop-btn')
                             .setLabel('Stop')
                             .setStyle(ButtonStyle.Danger);
+
+                        const repeatBtn = new ButtonBuilder()
+                            .setCustomId('repeat-btn')
+                            .setLabel(curSession.repeatFlag ? 'Repeat Off' : 'Repeat On')
+                            .setStyle(ButtonStyle.Primary);
+
+                        const queueBtn = new ButtonBuilder()
+                            .setCustomId('queue-btn')
+                            .setLabel('View Queue')
+                            .setStyle(ButtonStyle.Primary);
                         
-                        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn, stopBtn);
-                        await channel.send({embeds: [embed], components: [row]});
+                        const row = new ActionRowBuilder().addComponents(pauseBtn, skipBtn, stopBtn, repeatBtn, queueBtn);
+                        sentMessage = await channel.send({embeds: [embed], components: [row]});
+                    } else { 
+                        sentMessage = await channel.send({ content: 'There are no more songs in the queue!' });
+                    }
+                    this.sessions.set(guildId, { ...curSession, nowPlayingMessage: sentMessage });
+                
+                // If we are playing the first song in the queue, and there is a previous nowPlaying message (no songs in queue), delete it.
+                } else if (newState.status === 'playing' && curSession.queue.length === 0) {
+                    if (curSession.nowPlayingMessage) { 
+                        await curSession.nowPlayingMessage.delete();
+                        curSession.nowPlayingMessage = null;
                     }
                 }
+
+                
+
+
             });
 
             newPlayer.on('error', error => { 
@@ -69,7 +100,8 @@ class AudioQueue {
                 queue: [],
                 connection: connection,
                 player: null,
-                repeatFlag: false
+                repeatFlag: false,
+                nowPlayingMessage: null
             });
         }
         return this.sessions.get(guildId);
@@ -92,12 +124,14 @@ class AudioQueue {
         return queue;
     }
 
-    play(guildId) {
-        const { queue, connection, player } = this.sessions.get(guildId);
-        if (queue.length > 0) {
-            const cur = queue[0];
-            connection.subscribe(player);
-            player.play(createAudioResource(cur.path));
+    play(guildId, sentMessage) {
+        // const { queue, connection, player } = this.sessions.get(guildId);
+        const session = this.sessions.get(guildId);
+        if (session.queue.length > 0) {
+            const cur = session.queue[0];
+            session.connection.subscribe(session.player);
+            session.player.play(createAudioResource(cur.path));
+            this.sessions.set(guildId, { ...session, nowPlayingMessage: sentMessage});
             return cur;
         }
         return null;
@@ -121,9 +155,9 @@ class AudioQueue {
     }
 
     stop(guildId) { 
-        const { player } = this.sessions.get(guildId);
+        const session = this.sessions.get(guildId);
         this.clearQueue(guildId);
-        player.stop();
+        session.player.stop();
     }
 
     skip(guildId) { 
