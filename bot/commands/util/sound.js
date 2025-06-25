@@ -9,28 +9,18 @@ const formattedOpts = opts.map((o) => {
 
 const data = new SlashCommandBuilder()
     .setName('sound')
-    .setDescription('Plays some audio!')
-    .addStringOption( option =>  
-        option.setName('group')
-            .setDescription('The soundboard group')
-            .setRequired(true)
-            .addChoices(...formattedOpts)
-    );
+    .setDescription('Plays some audio!');
 
 const execute  = async (interaction) => {
-    // const strChoice = interaction.options.getString("group");
-    // console.log(strChoice);
     const nameSelect = new StringSelectMenuBuilder()
         .setCustomId('name-select')
         .addOptions(opts.map((o) => 
             new StringSelectMenuOptionBuilder()
                 .setLabel(o)
-                .setDescription(o)
                 .setValue(o)
-        ))
+        ));
 
-    const row = new ActionRowBuilder()
-        .addComponents(nameSelect)
+    const row = new ActionRowBuilder().addComponents(nameSelect);
 
     await interaction.reply({
         content: "ree",

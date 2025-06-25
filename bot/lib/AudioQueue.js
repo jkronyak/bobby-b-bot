@@ -170,6 +170,13 @@ class AudioQueue {
         session.repeatFlag = !session.repeatFlag;
     }
 
+    playSound(guildId, soundPath) { 
+        
+        const session = this.sessions.get(guildId);
+        session.player.play(createAudioResource());
+        return null;
+    }
+
 }
 const audioQueue = new AudioQueue();
 export default audioQueue;
